@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --background: #eef1f5;
+  --foreground: #111827;
+  --panel: rgba(255, 255, 255, 0.82);
+  --panel-strong: rgba(248, 250, 252, 0.94);
+  --hairline: rgba(15, 23, 42, 0.11);
+  --metal: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(226, 232, 240, 0.74));
+  --chrome: linear-gradient(145deg, #f8fafc 0%, #dbe3ec 42%, #ffffff 100%);
+  --shadow-soft: 0 24px 70px rgba(15, 23, 42, 0.14);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "Segoe UI", sans-serif;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 12% 10%, rgba(148, 163, 184, 0.36), transparent 28rem),
+    radial-gradient(circle at 85% 0%, rgba(203, 213, 225, 0.72), transparent 24rem),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.82), rgba(226, 232, 240, 0.46)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(15, 23, 42, 0.018) 0,
+      rgba(15, 23, 42, 0.018) 1px,
+      transparent 1px,
+      transparent 9px
+    );
+}
+
+::selection {
+  background: rgba(15, 23, 42, 0.16);
+}
+
+button,
+a {
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+button:hover,
+a:hover {
+  transform: translateY(-1px);
+}
+
+.kya-shell {
+  position: relative;
+}
+
+.kya-shell::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.24) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 72%);
+}
+
+.metal-card {
+  border: 1px solid var(--hairline);
+  background: var(--panel);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(22px) saturate(1.2);
+}
+
+.chrome-button {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: var(--chrome);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.technical-grid {
+  background-image: linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+  background-size: 18px 18px;
+}

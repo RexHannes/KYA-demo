@@ -1,0 +1,38 @@
+{
+  "name": "kya-demo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "netlify:bootstrap": "node scripts/netlify-bootstrap.mjs",
+    "netlify:deploy": "netlify deploy --prod --build"
+  },
+  "dependencies": {
+    "@netlify/functions": "^3.1.10",
+    "@prisma/client": "^6.19.0",
+    "@supabase/supabase-js": "^2.106.0",
+    "next": "16.2.6",
+    "prisma": "^6.19.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.15.8",
+    "netlify-cli": "^23.0.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

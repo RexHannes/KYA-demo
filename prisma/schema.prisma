@@ -1,0 +1,105 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model KyaEntity {
+  id         String   @id
+  collection String
+  data       Json
+  mode       String   @default("demo")
+  updatedAt  DateTime @updatedAt
+
+  @@unique([collection, id])
+  @@index([collection])
+  @@map("kya_entities")
+}
+
+model KyaKv {
+  namespace String
+  key       String
+  value     Json
+  mode      String   @default("demo")
+  updatedAt DateTime @updatedAt
+
+  @@id([namespace, key])
+  @@map("kya_kv")
+}
+
+model KyaCounter {
+  prefix String @id
+  value  Int    @default(0)
+  mode   String @default("demo")
+
+  @@map("kya_counters")
+}
+
+model KyaAuditEvent {
+  id                  String   @id
+  type                String
+  actor               String
+  subjectId           String   @map("subject_id")
+  caseId              String?  @map("case_id")
+  inputHash           String   @map("input_hash")
+  outputHash          String   @map("output_hash")
+  policyVersion       String?  @map("policy_version")
+  previousEventHash   String?  @map("previous_event_hash")
+  createdAt           DateTime @map("created_at")
+  eventHash           String   @map("event_hash")
+  payload             Json?
+  mode                String   @default("demo")
+
+  @@index([subjectId])
+  @@index([createdAt])
+  @@map("kya_audit_events")
+}
+
+model KyaLiveFeedEvent {
+  id        String   @id @default(cuid())
+  at        DateTime @default(now())
+  agentSlug String   @map("agent_slug")
+  agentName String   @map("agent_name")
+  phase     String
+  message   String?
+  llm       Json?
+  payment   Json?    @map("payment_request")
+  decision  Json?
+  receipt   Json?
+  case      Json?
+  obeyed    Boolean?
+  mode      String   @default("demo")
+
+  @@index([at(sort: Desc)])
+  @@map("kya_live_feed_events")
+}
+
+model KyaApiKey {
+  id         String    @id @default(cuid())
+  label      String
+  keyPrefix  String    @map("key_prefix")
+  keyHash    String    @unique @map("key_hash")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  revokedAt  DateTime? @map("revoked_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  mode       String    @default("demo")
+
+  @@map("kya_api_keys")
+}
+
+model KyaStatusSnapshot {
+  id                 String   @id @default("global")
+  auditChainValid    Boolean  @default(true) @map("audit_chain_valid")
+  totalAuditEvents   Int      @default(0) @map("total_audit_events")
+  totalDecisions     Int      @default(0) @map("total_decisions")
+  lastCronAt         DateTime? @map("last_cron_at")
+  lastCronAgent      String?  @map("last_cron_agent")
+  updatedAt          DateTime @updatedAt
+
+  @@map("kya_status_snapshot")
+}
