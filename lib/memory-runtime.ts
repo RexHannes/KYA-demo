@@ -233,3 +233,7 @@ export function memoryStatus() {
     }
   };
 }
+
+export function exportMemoryEvidencePack(paymentRequestId: string) {
+  return state().guard.exportEvidencePack(paymentRequestId);
+}

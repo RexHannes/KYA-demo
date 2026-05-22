@@ -7,7 +7,7 @@ export default function DemoPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">KYA Sandbox</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight">Live agent authority console</h1>
         <p className="mt-3 max-w-2xl text-slate-600">
-          Acme Demo Holdings — ProcurementBot, ResearchBot, and TravelBot submit real API payment checks.
+          Acme Demo Holdings — ProcurementBot, ResearchBot, and TravelBot submit live sandbox authority checks for mock-payment decisions.
         </p>
         <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
           <div className="rounded-2xl border border-white/70 bg-white/70 p-4">

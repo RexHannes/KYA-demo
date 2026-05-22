@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type FeedEvent = {
   id: string;
@@ -15,6 +17,7 @@ type FeedEvent = {
 };
 
 export function LiveFeedPanel() {
+  const router = useRouter();
   const [events, setEvents] = useState<FeedEvent[]>([]);
   const [stats, setStats] = useState<Record<string, { approved: number; blocked: number; pending: number }>>({});
   const [busy, setBusy] = useState(false);
@@ -73,7 +76,12 @@ export function LiveFeedPanel() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? "Tick failed");
       }
+      const data = await res.json().catch(() => ({}));
+      const paymentRequestId = data?.result?.result?.payment_request?.id;
       await refresh();
+      if (paymentRequestId) {
+        router.push(`/demo/cases/${encodeURIComponent(paymentRequestId)}`);
+      }
     } catch (error) {
       setError(error instanceof Error ? `Could not run agent tick: ${error.message}` : "Could not run agent tick.");
     } finally {
@@ -85,8 +93,11 @@ export function LiveFeedPanel() {
     <section className="metal-card technical-grid space-y-5 rounded-3xl p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Live control plane</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Case-file control plane</p>
           <h2 className="mt-1 text-2xl font-semibold tracking-tight">Agent requests and audit decisions</h2>
+          <p className="mt-1 max-w-2xl text-sm text-slate-600">
+            Every sandbox payment decision becomes an inspectable authority case file.
+          </p>
         </div>
         <div className="rounded-full border border-slate-300/80 bg-white/70 px-3 py-1 text-xs text-slate-600">
           {fallback === "memory" ? "Memory fallback active" : "Netlify Postgres connected"}
@@ -155,6 +166,14 @@ export function LiveFeedPanel() {
                 {event.payment_request?.merchant} · {event.payment_request?.amount_usd} USDC
               </p>
               {event.llm?.item_description ? <p className="text-slate-500">{event.llm.item_description}</p> : null}
+              {event.payment_request?.id ? (
+                <Link
+                  href={`/demo/cases/${encodeURIComponent(event.payment_request.id)}`}
+                  className="mt-3 inline-flex rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  View evidence
+                </Link>
+              ) : null}
             </article>
           ))
         )}
