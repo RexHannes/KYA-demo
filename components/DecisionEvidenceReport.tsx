@@ -85,7 +85,10 @@ export function DecisionEvidenceReport() {
   }
 
   useEffect(() => {
-    load().catch((err) => setError(err instanceof Error ? err.message : "Could not load report data."));
+    const timeout = window.setTimeout(() => {
+      load().catch((err) => setError(err instanceof Error ? err.message : "Could not load report data."));
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, []);
 
   const latest = report?.decisions[0] ?? null;

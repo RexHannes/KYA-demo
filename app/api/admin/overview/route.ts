@@ -5,7 +5,7 @@ import { verifyStoredAuditChain } from "@/lib/guard-runtime";
 import { listIntegratorApiKeys } from "@/lib/api-keys";
 
 export async function GET(request: Request) {
-  const denied = assertAdmin(request);
+  const denied = await assertAdmin(request);
   if (denied) return denied;
 
   const prisma = getPrisma();

@@ -6,12 +6,12 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const auth = await assertIntegratorApiKey(request);
+  const auth = await assertIntegratorApiKey(request, "payment:execute_mock");
   if (!auth.ok) return auth.response;
 
   try {
     const { id } = await context.params;
-    if ("keyId" in auth && auth.keyId) await recordApiKeyUsage(auth.keyId);
+    if ("keyId" in auth && auth.keyId) await recordApiKeyUsage(auth.keyId, request);
     const result = await executeMockPaymentRequest(id, `integrator:${auth.label}`);
     return NextResponse.json(result);
   } catch (error) {

@@ -21,9 +21,9 @@ export async function runDemoAgentTick(agentSlug?: string) {
   const resolvedAgentSlug = agentSlug ?? (await nextAgentSlug(prisma));
   let world = await getDemoWorld(prisma);
 
-  return withGuard(async (guard) => {
+  return withGuard(async (guard, _store, tx) => {
     if (!world) {
-      world = await seedDemoWorld(guard, prisma);
+      world = await seedDemoWorld(guard, tx);
     }
 
     const agentRecord = world.agents.find((agent) => agent.slug === resolvedAgentSlug);

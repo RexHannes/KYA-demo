@@ -62,6 +62,6 @@ export async function exportEvidencePack(paymentRequestId: string) {
   return withGuard(async (guard) => guard.exportEvidencePack(paymentRequestId));
 }
 
-export async function recordApiKeyUsage(keyId?: string) {
-  if (keyId) await touchApiKeyUsage(keyId);
+export async function recordApiKeyUsage(keyId?: string, request?: Request) {
+  if (keyId) await touchApiKeyUsage(keyId, request);
 }

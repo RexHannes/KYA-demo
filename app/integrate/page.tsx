@@ -12,7 +12,8 @@ export default function IntegratePage() {
       <h2>1. Get an API key</h2>
       <p>
         Ask your operator for a demo integrator key (created in{" "}
-        <a href="/admin/keys">/admin/keys</a> — backstage login required). Send it on every request:
+        <a href="/admin/keys">/admin/keys</a> — backstage login required). Keys carry scopes, expiry,
+        rate limits, and last-used metadata. Send the key on every integrator request:
       </p>
       <pre className="rounded-lg bg-slate-900 p-4 text-sm text-white">
         {`x-agentpay-api-key: kya_demo_...`}
@@ -46,7 +47,8 @@ x-agentpay-api-key: YOUR_KEY
       <pre className="rounded-lg bg-slate-100 p-4 text-sm">{`GET ${base}/api/evidence-packs/{payment_request_id}`}</pre>
 
       <p className="text-sm text-slate-600">
-        Set <code>REQUIRE_DEMO_API_KEY=true</code> on the server to reject requests without a valid key.
+        Production deployments require valid API keys for integrator endpoints by default. Use{" "}
+        <code>PUBLIC_DEMO_MODE=true</code> only when you intentionally want public sandbox demo actions.
       </p>
     </div>
   );

@@ -6,12 +6,12 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const auth = await assertIntegratorApiKey(request);
+  const auth = await assertIntegratorApiKey(request, "evidence:read");
   if (!auth.ok) return auth.response;
 
   try {
     const { id } = await context.params;
-    if ("keyId" in auth && auth.keyId) await recordApiKeyUsage(auth.keyId);
+    if ("keyId" in auth && auth.keyId) await recordApiKeyUsage(auth.keyId, request);
     const pack = await exportEvidencePack(id);
     return NextResponse.json(pack);
   } catch (error) {

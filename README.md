@@ -1,14 +1,15 @@
 # KYA Demo (public sandbox)
 
-Public **Know Your Agent** demo: mandate-bound agent payments, policy decisions, mock settlement, and tamper-evident audit — on **Netlify** + **Netlify Database/Postgres**.
+Public **Know Your Agent** demo: mandate-bound agent payments, policy decisions, mock settlement, inspectable case files, and tamper-evident audit — on **Netlify** + **Netlify Database/Postgres**.
 
-> **DEMO MODE** — Synthetic data only. No real funds.
+> **DEMO MODE** — Synthetic data only. No real funds, no real KYB/AML, and no production compliance conclusion.
 
 ## What you get
 
 | Surface | URL | Who |
 |---------|-----|-----|
-| Public demo | `/demo` | Investors — live agent feed |
+| Public demo | `/demo` | Investors — live sandbox authority checks |
+| Case file | `/demo/cases/:payment_request_id` | Investors / reviewers — evidence-room view |
 | Integrator docs | `/integrate` | Developers — API how-to |
 | **Backstage** | `/admin` | You / your boss — stats, DB tables, **API keys** |
 | Status | `/status` | Uptime + audit chain health |
@@ -28,7 +29,11 @@ curl -X POST "$BASE/api/payment-requests/check" \
   -d '{ "agent_id":"...", "mandate_id":"...", ... }'
 ```
 
-Set `REQUIRE_DEMO_API_KEY=true` in production to block anonymous API use.
+Production integrator endpoints fail closed by default and require API keys. `REQUIRE_DEMO_API_KEY=true`
+still forces keys in local/dev. `DEMO_INTEGRATOR_API_KEY` authenticates only when the caller actually sends it.
+
+Public demo actions are open in local/dev. In production, set `PUBLIC_DEMO_MODE=true` to enable
+`/api/demo/seed`, `/api/demo/tick`, and public case-file viewing.
 
 ## Boss monitoring (Netlify Database)
 
@@ -36,6 +41,10 @@ Set `REQUIRE_DEMO_API_KEY=true` in production to block anonymous API use.
 - **Netlify Dashboard:** Database → production → table editor / SQL console for a professional SQL view.
 
 Data lives in Postgres (`kya_*` tables), not in the page HTML.
+
+The current Postgres bridge persists demo state and wraps guard execution in a transaction, but it is still
+an investor/integrator sandbox. It is not yet a concurrent high-volume payment system; typed domain tables,
+stronger database constraints, production auth, and real provider integrations remain future hardening work.
 
 ## Local setup
 
@@ -73,8 +82,12 @@ Cron: `netlify/functions/scheduled-demo-tick.mts` hits `/api/cron/demo-tick` eve
 |--------|------|------|
 | POST | `/api/demo/seed` | Public |
 | POST | `/api/demo/tick` | Public |
-| POST | `/api/payment-requests/check` | `x-agentpay-api-key` (if required) |
+| GET | `/demo/cases/:payment_request_id` | Public demo mode |
+| POST | `/api/payment-requests/check` | API key in production |
 | POST | `/api/payment-requests/:id/execute-mock` | API key |
 | GET | `/api/evidence-packs/:id` | API key |
 | GET | `/api/admin/overview` | `ADMIN_TOKEN` |
 | POST | `/api/admin/keys` | `ADMIN_TOKEN` |
+
+API keys include scopes, optional expiry, optional per-minute rate limit, and last-used IP/user-agent metadata.
+Default scopes are `payment:check`, `payment:execute_mock`, and `evidence:read`.

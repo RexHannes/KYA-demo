@@ -3,8 +3,12 @@ import { withGuard } from "@/lib/guard-runtime";
 import { seedDemoWorld, getDemoWorld } from "@/lib/demo-world";
 import { getPrisma, hasDatabase } from "@/lib/prisma";
 import { getMemoryWorld, seedMemoryWorld } from "@/lib/memory-runtime";
+import { assertPublicDemoAccess } from "@/lib/demo-access";
 
-export async function POST() {
+export async function POST(request: Request) {
+  const denied = await assertPublicDemoAccess(request, "seed");
+  if (denied) return denied;
+
   try {
     if (!hasDatabase()) {
       const world = seedMemoryWorld();
@@ -25,7 +29,10 @@ export async function POST() {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied = await assertPublicDemoAccess(request, "seed_status");
+  if (denied) return denied;
+
   try {
     if (!hasDatabase()) {
       const world = getMemoryWorld();

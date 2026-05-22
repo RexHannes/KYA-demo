@@ -22,7 +22,7 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ table: string }> }
 ) {
-  const denied = assertAdmin(request);
+  const denied = await assertAdmin(request);
   if (denied) return denied;
 
   const { table } = await context.params;
@@ -60,9 +60,14 @@ export async function GET(
         id: true,
         label: true,
         keyPrefix: true,
+        scopes: true,
+        expiresAt: true,
+        rateLimitPerMinute: true,
         createdAt: true,
         revokedAt: true,
         lastUsedAt: true,
+        lastUsedIp: true,
+        lastUsedUserAgent: true,
         mode: true
       }
     });

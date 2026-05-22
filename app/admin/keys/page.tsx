@@ -8,14 +8,22 @@ type KeyRow = {
   id: string;
   label: string;
   keyPrefix: string;
+  scopes: string[];
+  expiresAt: string | null;
+  rateLimitPerMinute: number | null;
   createdAt: string;
   revokedAt: string | null;
   lastUsedAt: string | null;
+  lastUsedIp: string | null;
+  lastUsedUserAgent: string | null;
 };
 
 export default function AdminKeysPage() {
   const [keys, setKeys] = useState<KeyRow[]>([]);
   const [label, setLabel] = useState("partner_agent");
+  const [scopes, setScopes] = useState("payment:check,payment:execute_mock,evidence:read");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [rateLimitPerMinute, setRateLimitPerMinute] = useState("60");
   const [createdKey, setCreatedKey] = useState<string | null>(null);
 
   async function load() {
@@ -35,7 +43,12 @@ export default function AdminKeysPage() {
     const res = await fetch("/api/admin/keys", {
       method: "POST",
       headers: adminHeaders(),
-      body: JSON.stringify({ label })
+      body: JSON.stringify({
+        label,
+        scopes: scopes.split(",").map((scope) => scope.trim()).filter(Boolean),
+        expires_at: expiresAt || null,
+        rate_limit_per_minute: Number(rateLimitPerMinute) || null
+      })
     });
     const data = await res.json();
     if (data.key) setCreatedKey(data.key);
@@ -64,12 +77,31 @@ export default function AdminKeysPage() {
           </p>
         </header>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="grid gap-2 rounded-xl border bg-white p-4 sm:grid-cols-2">
           <input
             className="rounded-md border px-3 py-2 text-sm"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             placeholder="Label e.g. Acme partner bot"
+          />
+          <input
+            className="rounded-md border px-3 py-2 text-sm"
+            value={rateLimitPerMinute}
+            onChange={(e) => setRateLimitPerMinute(e.target.value)}
+            placeholder="Rate limit per minute"
+          />
+          <input
+            className="rounded-md border px-3 py-2 text-sm sm:col-span-2"
+            value={scopes}
+            onChange={(e) => setScopes(e.target.value)}
+            placeholder="payment:check,payment:execute_mock,evidence:read"
+          />
+          <input
+            type="datetime-local"
+            className="rounded-md border px-3 py-2 text-sm"
+            value={expiresAt}
+            onChange={(e) => setExpiresAt(e.target.value)}
+            aria-label="Expiry"
           />
           <button
             type="button"
@@ -92,8 +124,12 @@ export default function AdminKeysPage() {
             <tr className="border-b text-slate-500">
               <th className="py-2">Label</th>
               <th>Prefix</th>
+              <th>Scopes</th>
+              <th>Rate</th>
+              <th>Expiry</th>
               <th>Created</th>
               <th>Last used</th>
+              <th>Last caller</th>
               <th></th>
             </tr>
           </thead>
@@ -102,8 +138,14 @@ export default function AdminKeysPage() {
               <tr key={key.id} className="border-b">
                 <td className="py-2 font-medium">{key.label}</td>
                 <td className="font-mono text-xs">{key.keyPrefix}…</td>
+                <td className="max-w-xs text-xs text-slate-600">{(key.scopes ?? []).join(", ")}</td>
+                <td>{key.rateLimitPerMinute ?? "default"}/min</td>
+                <td>{key.expiresAt ? new Date(key.expiresAt).toLocaleString() : "—"}</td>
                 <td>{new Date(key.createdAt).toLocaleString()}</td>
                 <td>{key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleString() : "—"}</td>
+                <td className="max-w-xs truncate text-xs text-slate-500">
+                  {key.lastUsedIp ?? "—"} {key.lastUsedUserAgent ? `· ${key.lastUsedUserAgent}` : ""}
+                </td>
                 <td>
                   {key.revokedAt ? (
                     <span className="text-slate-400">Revoked</span>

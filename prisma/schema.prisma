@@ -80,14 +80,19 @@ model KyaLiveFeedEvent {
 }
 
 model KyaApiKey {
-  id         String    @id @default(cuid())
-  label      String
-  keyPrefix  String    @map("key_prefix")
-  keyHash    String    @unique @map("key_hash")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  revokedAt  DateTime? @map("revoked_at")
-  lastUsedAt DateTime? @map("last_used_at")
-  mode       String    @default("demo")
+  id                String    @id @default(cuid())
+  label             String
+  keyPrefix         String    @map("key_prefix")
+  keyHash           String    @unique @map("key_hash")
+  scopes            Json      @default("[\"payment:check\",\"payment:execute_mock\",\"evidence:read\"]")
+  expiresAt         DateTime? @map("expires_at")
+  rateLimitPerMinute Int?     @map("rate_limit_per_minute")
+  lastUsedAt        DateTime? @map("last_used_at")
+  lastUsedIp        String?   @map("last_used_ip")
+  lastUsedUserAgent String?   @map("last_used_user_agent")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  revokedAt         DateTime? @map("revoked_at")
+  mode              String    @default("demo")
 
   @@map("kya_api_keys")
 }

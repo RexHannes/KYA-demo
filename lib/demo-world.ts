@@ -2,6 +2,8 @@ import { appendLiveEvent } from "./live-feed";
 import type { AgentPayGuard } from "./vendor/agentpay/core/guard.js";
 import type { PrismaClient } from "@prisma/client";
 
+type DemoPrisma = Pick<PrismaClient, "kyaKv">;
+
 export const AGENT_DEFINITIONS = [
   {
     slug: "procurement",
@@ -102,14 +104,14 @@ export type DemoWorld = {
   }>;
 };
 
-export async function getDemoWorld(prisma: PrismaClient): Promise<DemoWorld | null> {
+export async function getDemoWorld(prisma: DemoPrisma): Promise<DemoWorld | null> {
   const row = await prisma.kyaKv.findUnique({
     where: { namespace_key: { namespace: "demo", key: "world" } }
   });
   return (row?.value as DemoWorld) ?? null;
 }
 
-export async function seedDemoWorld(guard: AgentPayGuard, prisma: PrismaClient) {
+export async function seedDemoWorld(guard: AgentPayGuard, prisma: DemoPrisma) {
   const principal = guard.createPrincipal(
     {
       type: "company",
