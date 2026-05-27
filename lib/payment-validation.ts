@@ -17,7 +17,12 @@ export const paymentCheckSchema = z
     decision_ttl: z.string().min(1).optional(),
     demo_agent_slug: z.string().min(1).optional(),
     demo_agent_name: z.string().min(1).optional(),
-    demo_llm: z.unknown().optional()
+    demo_llm: z.unknown().optional(),
+    originator_name: z.string().min(1).optional(),
+    originator_address: z.string().min(1).optional(),
+    originator_account_id: z.string().min(1).optional(),
+    beneficiary_name: z.string().min(1).optional(),
+    beneficiary_address: z.string().min(1).optional()
   })
   .passthrough()
   .superRefine((value, ctx) => {

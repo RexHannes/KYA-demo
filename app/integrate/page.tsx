@@ -36,7 +36,31 @@ export default function IntegratePage() {
     "token": "USDC",
     "chain": "base",
     "purpose": "buy_api_credits",
-    "idempotency_key": "req-unique-001"
+    "idempotency_key": "req-unique-001",
+    "nonce": "nonce-abc-001"
+  }'`}</pre>
+
+      <h2>Travel Rule fields (required above $1,000)</h2>
+      <p>
+        FATF Travel Rule applies to transfers of $1,000 USD or more. Include originator data or the
+        request is rejected with <code>TRAVEL_RULE_DATA_MISSING</code>.
+      </p>
+      <pre className="rounded-lg bg-slate-100 p-4 text-sm overflow-x-auto">{`curl -X POST ${base}/api/payment-requests/check \\
+  -H "Content-Type: application/json" \\
+  -H "x-agentpay-api-key: YOUR_KEY" \\
+  -d '{
+    "agent_id": "agt_...",
+    "mandate_id": "mdt_...",
+    "merchant": "api.vendor.com",
+    "amount_usd": "1500.00",
+    "token": "USDC",
+    "chain": "base",
+    "purpose": "buy_api_credits",
+    "idempotency_key": "req-unique-002",
+    "nonce": "nonce-abc-002",
+    "originator_name": "Acme Corp",
+    "originator_address": "123 Main St, New York NY 10001",
+    "originator_account_id": "acct_acme_001"
   }'`}</pre>
 
       <p className="not-prose mt-1 text-sm font-medium text-slate-700">Example response — blocked decision:</p>
