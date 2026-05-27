@@ -94,8 +94,7 @@ export function AdminGate({ children }: { children: ReactNode }) {
       <div className="mx-auto max-w-md space-y-4 rounded-xl border bg-white p-6 shadow-sm">
         <h1 className="text-xl font-bold">Backstage login</h1>
         <p className="text-sm text-slate-600">
-          For operators only. Use the <code className="text-xs">ADMIN_TOKEN</code> from Netlify env or
-          your <code className="text-xs">.env.local</code>. Sessions expire after 30 minutes.
+          Operator access only. Contact the team for credentials. Sessions expire after 30 minutes.
         </p>
         <form onSubmit={login} className="space-y-3">
           <input

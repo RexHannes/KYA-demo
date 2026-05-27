@@ -77,18 +77,34 @@ function statusClass(status: string) {
 export function DecisionEvidenceReport() {
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState("");
-
-  async function load() {
-    const res = await fetch("/api/demo/report", { cache: "no-store" });
-    if (!res.ok) throw new Error("Could not load report data.");
-    setReport(await res.json());
-  }
+  const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      load().catch((err) => setError(err instanceof Error ? err.message : "Could not load report data."));
-    }, 0);
-    return () => window.clearTimeout(timeout);
+    const controller = new AbortController();
+    const abortTimer = window.setTimeout(() => {
+      controller.abort();
+      setTimedOut(true);
+    }, 9000);
+
+    fetch("/api/demo/report", { cache: "no-store", signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error("Could not load report data.");
+        return res.json();
+      })
+      .then((data: Report) => {
+        clearTimeout(abortTimer);
+        setReport(data);
+      })
+      .catch((err) => {
+        if ((err as Error).name === "AbortError") return;
+        clearTimeout(abortTimer);
+        setError(err instanceof Error ? err.message : "Could not load report data.");
+      });
+
+    return () => {
+      clearTimeout(abortTimer);
+      controller.abort();
+    };
   }, []);
 
   const latest = report?.decisions[0] ?? null;
@@ -99,7 +115,18 @@ export function DecisionEvidenceReport() {
   }
 
   if (!report) {
-    return <div className="rounded-2xl border bg-white/70 p-5 text-sm text-slate-500">Loading live evidence report...</div>;
+    if (timedOut) {
+      return (
+        <div className="rounded-2xl border bg-white/70 p-6 text-sm text-slate-600">
+          <p className="font-medium">No decisions recorded yet.</p>
+          <p className="mt-1">
+            <a href="/demo" className="underline">Run the demo</a> to generate agent payment decisions —
+            they will appear here automatically.
+          </p>
+        </div>
+      );
+    }
+    return <div className="rounded-2xl border bg-white/70 p-5 text-sm text-slate-500">Loading live evidence report…</div>;
   }
 
   return (
@@ -171,6 +198,13 @@ export function DecisionEvidenceReport() {
               </tr>
             </thead>
             <tbody>
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-6 text-center text-sm text-slate-400">
+                    No decisions yet — <a href="/demo" className="underline">run the demo</a> to generate data.
+                  </td>
+                </tr>
+              ) : null}
               {rows.map((row) => (
                 <tr key={row.id} className="border-t align-top">
                   <td className="p-3 font-medium">{row.agent_name}</td>

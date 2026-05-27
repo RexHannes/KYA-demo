@@ -41,13 +41,31 @@ export function LiveFeedPanel() {
     let intervalId: ReturnType<typeof setInterval> | null = null;
     let mounted = true;
 
-    fetch("/api/demo/seed", { method: "POST" })
-      .catch(() => null)
-      .finally(() => {
-        if (!mounted) return;
-        void refresh();
-        intervalId = setInterval(refresh, 2000);
-      });
+    const init = async () => {
+      await fetch("/api/demo/seed", { method: "POST" }).catch(() => null);
+      if (!mounted) return;
+
+      // If feed is empty, auto-generate initial decisions so the demo has content on arrival
+      const feedRes = await fetch("/api/demo/live-feed?limit=1").catch(() => null);
+      const feedData = feedRes?.ok ? await feedRes.json().catch(() => null) : null;
+      if (!mounted) return;
+
+      if (!feedData?.events?.length) {
+        for (let i = 0; i < 3 && mounted; i++) {
+          await fetch("/api/demo/tick", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({})
+          }).catch(() => null);
+        }
+      }
+
+      if (!mounted) return;
+      void refresh();
+      intervalId = setInterval(refresh, 2000);
+    };
+
+    void init();
 
     return () => {
       mounted = false;
