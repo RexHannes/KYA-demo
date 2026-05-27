@@ -245,7 +245,7 @@ export function memoryStatus() {
   const verification = verifyAuditChain(runtime.guard.store.auditEvents);
   return {
     database: "memory_fallback",
-    message: "Supabase DATABASE_URL is not configured; using warm serverless memory for the public demo.",
+    message: "DATABASE_URL is not configured; using warm serverless memory for the public demo.",
     demo_mode: true,
     audit_chain_valid: verification.valid,
     audit_event_count: runtime.guard.store.auditEvents.length,

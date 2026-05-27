@@ -8,7 +8,7 @@ export function hasDatabase() {
 
 export function getPrisma() {
   if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not set. Add your Supabase Postgres connection string.");
+    throw new Error("DATABASE_URL is not set. Add your Postgres connection string.");
   }
   if (!globalForPrisma.prisma) {
     globalForPrisma.prisma = new PrismaClient();

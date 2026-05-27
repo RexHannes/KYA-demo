@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { assertAdmin } from "@/lib/auth";
-import { getPrisma } from "@/lib/prisma";
+import { getPrisma, hasDatabase } from "@/lib/prisma";
+import { listMemoryEvents } from "@/lib/memory-runtime";
 
 export async function GET(request: Request) {
   const denied = await assertAdmin(request);
@@ -12,6 +13,39 @@ export async function GET(request: Request) {
   const limit = Math.min(Number(url.searchParams.get("limit") ?? "20"), 100);
   const skip = (page - 1) * limit;
   const agentFilter = url.searchParams.get("agent") ?? undefined;
+
+  if (!hasDatabase()) {
+    const events = listMemoryEvents({ limit: page * limit, agentSlug: agentFilter }).filter(
+      (event) => event.phase === "decision"
+    );
+    const pageEvents = events.slice(skip, skip + limit);
+    return NextResponse.json({
+      requests: pageEvents.map((event) => {
+        const payment = event.payment_request as Record<string, unknown> | undefined;
+        return {
+          id: event.id,
+          at: event.at,
+          agent_slug: event.agent_slug,
+          agent_name: event.agent_name,
+          merchant: payment?.merchant ?? null,
+          amount_usd: payment?.amount_usd ?? null,
+          token: payment?.token ?? null,
+          chain: payment?.chain ?? null,
+          purpose: payment?.purpose ?? null,
+          status: event.decision?.status ?? null,
+          reason: event.decision?.reason ?? null,
+          payment_request_id: payment?.id ?? null
+        };
+      }),
+      pagination: {
+        page,
+        limit,
+        total: events.length,
+        pages: Math.ceil(events.length / limit)
+      },
+      fallback: "memory"
+    });
+  }
 
   const [events, total] = await Promise.all([
     prisma.kyaLiveFeedEvent.findMany({

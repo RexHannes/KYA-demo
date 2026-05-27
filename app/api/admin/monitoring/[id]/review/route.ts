@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { assertAdmin } from "@/lib/auth";
-import { getPrisma } from "@/lib/prisma";
+import { getPrisma, hasDatabase } from "@/lib/prisma";
 
 export async function POST(
   request: Request,
@@ -10,6 +10,10 @@ export async function POST(
   if (denied) return denied;
 
   const { id } = await params;
+  if (!hasDatabase()) {
+    return NextResponse.json({ alert: null, fallback: "memory", reviewed_id: id });
+  }
+
   const prisma = getPrisma();
 
   const alert = await prisma.kyaMonitoringAlert.findUnique({ where: { id } });
