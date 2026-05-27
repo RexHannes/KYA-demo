@@ -38,31 +38,22 @@ export function LiveFeedPanel() {
   }, []);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      void refresh();
-    }, 0);
-    const id = setInterval(refresh, 2000);
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let mounted = true;
+
+    fetch("/api/demo/seed", { method: "POST" })
+      .catch(() => null)
+      .finally(() => {
+        if (!mounted) return;
+        void refresh();
+        intervalId = setInterval(refresh, 2000);
+      });
+
     return () => {
-      window.clearTimeout(timeout);
-      clearInterval(id);
+      mounted = false;
+      if (intervalId !== null) clearInterval(intervalId);
     };
   }, [refresh]);
-
-  async function seed() {
-    setBusy(true);
-    try {
-      const res = await fetch("/api/demo/seed", { method: "POST" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Seed failed");
-      }
-      await refresh();
-    } catch (error) {
-      setError(error instanceof Error ? `Could not seed demo agents: ${error.message}` : "Could not seed demo agents.");
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function tick(slug?: string) {
     setBusy(true);
@@ -105,14 +96,6 @@ export function LiveFeedPanel() {
       </div>
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => seed()}
-          className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-900/15 disabled:opacity-50"
-        >
-          Seed Acme demo agents
-        </button>
         <button type="button" disabled={busy} onClick={() => tick("procurement")} className="chrome-button rounded-full px-4 py-2 text-sm font-medium">
           Run ProcurementBot
         </button>
@@ -141,7 +124,7 @@ export function LiveFeedPanel() {
       <div className="max-h-96 space-y-2 overflow-auto pr-1">
         {events.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-300 bg-white/50 p-5 text-sm text-slate-500">
-            No events yet. Seed agents, then run a bot.
+            Waiting for agent activity. Run a bot to generate a payment authority decision.
           </p>
         ) : (
           events.map((event) => (

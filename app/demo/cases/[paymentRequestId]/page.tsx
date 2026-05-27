@@ -146,6 +146,52 @@ export default async function PaymentAuthorityCasePage({
         </div>
       </section>
 
+      <section className="metal-card rounded-3xl p-5 sm:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Mandate scope</p>
+        <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-white/70 bg-white/75 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Allowed actions</p>
+            <p className="mt-1 break-words">
+              {asArray((asObject(mandate.data) as { allowed_actions?: unknown }).allowed_actions ?? mandate.allowed_actions)
+                .map((a) => text(a).replaceAll("_", " "))
+                .join(", ") || "Not recorded"}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/70 bg-white/75 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Token / chain</p>
+            <p className="mt-1">
+              {asArray((asObject(mandate.data) as { allowed_tokens?: unknown }).allowed_tokens ?? mandate.allowed_tokens).map((t) => text(t)).join(", ") || "Any"}{" "}
+              on {asArray((asObject(mandate.data) as { allowed_chains?: unknown }).allowed_chains ?? mandate.allowed_chains).map((c) => text(c)).join(", ") || "any chain"}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/70 bg-white/75 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Spending limits</p>
+            {(() => {
+              const raw = asObject(mandate.data) as { limits?: unknown };
+              const limits = asObject(raw.limits ?? mandate.limits);
+              return (
+                <p className="mt-1 space-y-0.5 text-xs leading-relaxed">
+                  Auto-approve ≤ ${text(limits.auto_approve_limit_usd ?? limits.auto_approve_limit, "—")}<br />
+                  Human approval ≤ ${text(limits.human_approval_limit_usd ?? limits.human_approval_limit, "—")}<br />
+                  Hard block &gt; ${text(limits.hard_block_limit_usd ?? limits.hard_block_limit, "—")}<br />
+                  Daily cap ${text(limits.daily_limit_usd ?? limits.daily_limit, "—")}
+                </p>
+              );
+            })()}
+          </div>
+          <div className="rounded-2xl border border-white/70 bg-white/75 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Expires</p>
+            <p className="mt-1 break-words text-xs">
+              {(() => {
+                const raw = asObject(mandate.data) as { expires_at?: unknown };
+                const exp = raw.expires_at ?? mandate.expires_at;
+                return exp ? new Date(text(exp)).toLocaleDateString() : "No expiry set";
+              })()}
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="metal-card rounded-3xl p-5 sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Rule checklist</p>

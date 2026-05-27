@@ -73,10 +73,6 @@ export default function AdminHomePage() {
           </Link>
         </div>
 
-        <p className="text-xs text-slate-500">
-          Tip: your boss can also use the Netlify Database table editor on the same database for SQL-level
-          monitoring.
-        </p>
       </div>
     </AdminGate>
   );

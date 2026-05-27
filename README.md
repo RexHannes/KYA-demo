@@ -8,10 +8,10 @@ Public **Know Your Agent** demo: mandate-bound agent payments, policy decisions,
 
 | Surface | URL | Who |
 |---------|-----|-----|
-| Public demo | `/demo` | Investors — live sandbox authority checks |
-| Case file | `/demo/cases/:payment_request_id` | Investors / reviewers — evidence-room view |
+| Public demo | `/demo` | Compliance reviewers — live sandbox authority checks |
+| Case file | `/demo/cases/:payment_request_id` | Compliance reviewers — evidence-room view |
 | Integrator docs | `/integrate` | Developers — API how-to |
-| **Backstage** | `/admin` | You / your boss — stats, DB tables, **API keys** |
+| **Backstage** | `/admin` | Operators — stats, DB tables, **API keys** |
 | Status | `/status` | Uptime + audit chain health |
 
 `agentpay-guard/` (sibling folder) remains the **local** engine + terminal agents — unchanged.
@@ -35,10 +35,9 @@ still forces keys in local/dev. `DEMO_INTEGRATOR_API_KEY` authenticates only whe
 Public demo actions are open in local/dev. In production, set `PUBLIC_DEMO_MODE=true` to enable
 `/api/demo/seed`, `/api/demo/tick`, and public case-file viewing.
 
-## Boss monitoring (Netlify Database)
+## Operator monitoring
 
-- **In-app:** `/admin` → overview, tables, API keys (login with `ADMIN_TOKEN`).
-- **Netlify Dashboard:** Database → production → table editor / SQL console for a professional SQL view.
+- `/admin` → overview, database tables, API key management (login with `ADMIN_TOKEN`).
 
 Data lives in Postgres (`kya_*` tables), not in the page HTML.
 
@@ -53,7 +52,7 @@ cd kya-demo
 cp .env.example .env.local
 # Netlify Database → production → connection strings
 npm install
-npx prisma db push
+npx prisma migrate deploy
 npm run dev
 ```
 
@@ -70,7 +69,7 @@ cd kya-demo
 npm install
 npm run netlify:bootstrap
 # set env vars in Netlify UI, then:
-npx prisma db push
+npx prisma migrate deploy
 npm run netlify:deploy
 ```
 
