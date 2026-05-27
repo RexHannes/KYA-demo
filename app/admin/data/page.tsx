@@ -35,7 +35,7 @@ export default function AdminDataPage() {
             ← Backstage
           </Link>
           <h1 className="text-3xl font-bold">Demo database</h1>
-          <p className="text-slate-600">Read-only view of Netlify Postgres demo data.</p>
+          <p className="text-slate-600">Read-only view of Postgres demo data.</p>
         </header>
         <div className="flex flex-wrap gap-2">
           {TABLES.map((name) => (

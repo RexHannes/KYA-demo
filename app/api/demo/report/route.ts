@@ -175,7 +175,7 @@ export async function GET() {
 
   return NextResponse.json({
     generated_at: new Date().toISOString(),
-    data_source: "netlify_postgres",
+    data_source: "postgres",
     finding: latest
       ? findingFor(latest.decision.status, latest.decision.reason, latest.agent_name)
       : "No agent decisions have been observed yet.",
