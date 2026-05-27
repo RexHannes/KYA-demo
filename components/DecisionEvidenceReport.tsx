@@ -1,63 +1,4 @@
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
-
-type DecisionRow = {
-  id: string;
-  observed_at: string;
-  agent_name: string;
-  request: {
-    id: string | null;
-    merchant: string | null;
-    amount_usd: string | null;
-    token: string | null;
-    chain: string | null;
-    purpose: string | null;
-  };
-  decision: {
-    id: string | null;
-    status: string;
-    reason: string;
-    approval_required: boolean;
-    policy_version: string | null;
-    rules_checked_count: number;
-    rules_triggered: Array<{ id: string | null; action: string | null; reason: string | null }>;
-    screening_status: string | null;
-    screening_provider: string | null;
-    screening_checks: Array<{ type: string | null; target: string | null; status: string | null; source: string | null }>;
-  };
-  proof: {
-    mandate_hash: string | null;
-    payment_request_hash: string | null;
-    receipt_id: string | null;
-    tx_hash: string | null;
-    case_id: string | null;
-  };
-};
-
-type AuditRow = {
-  id: string;
-  type: string;
-  subject_id: string | null;
-  case_id: string | null;
-  previous_event_hash: string | null;
-  event_hash: string;
-  created_at: string;
-};
-
-type Report = {
-  generated_at: string;
-  data_source: string;
-  finding: string;
-  status: {
-    database: string;
-    audit_chain_valid?: boolean;
-    counts?: Record<string, number>;
-  };
-  stats: { approved?: number; blocked?: number; review?: number };
-  decisions: DecisionRow[];
-  audit_trail: AuditRow[];
-};
+import type { EvidenceReport } from "@/lib/demo-report";
 
 function shortHash(value: string | null) {
   if (!value) return "not issued";
@@ -74,33 +15,9 @@ function statusClass(status: string) {
   return "border-amber-200 bg-amber-50 text-amber-900";
 }
 
-export function DecisionEvidenceReport() {
-  const [report, setReport] = useState<Report | null>(null);
-  const [error, setError] = useState("");
-
-  async function load() {
-    const res = await fetch("/api/demo/report", { cache: "no-store" });
-    if (!res.ok) throw new Error("Could not load report data.");
-    setReport(await res.json());
-  }
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      load().catch((err) => setError(err instanceof Error ? err.message : "Could not load report data."));
-    }, 0);
-    return () => window.clearTimeout(timeout);
-  }, []);
-
+export function DecisionEvidenceReport({ report }: { report: EvidenceReport }) {
   const latest = report?.decisions[0] ?? null;
-  const rows = useMemo(() => report?.decisions.slice(0, 8) ?? [], [report]);
-
-  if (error) {
-    return <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>;
-  }
-
-  if (!report) {
-    return <div className="rounded-2xl border bg-white/70 p-5 text-sm text-slate-500">Loading live evidence report...</div>;
-  }
+  const rows = report.decisions.slice(0, 8);
 
   return (
     <div className="space-y-6">
@@ -108,8 +25,8 @@ export function DecisionEvidenceReport() {
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Live evidence report</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight">Agent payment decision proof</h1>
         <p className="mt-3 max-w-3xl text-slate-600">
-          This report is generated from the live demo database. It shows only the necessary decision factors,
-          request identifiers, and audit hashes needed to explain and verify each KYA outcome.
+          This report is generated server-side from the live demo runtime. It shows only the necessary decision factors,
+          request identifiers, and audit hashes needed to explain and verify each AgentPay Guard outcome.
         </p>
         <div className="mt-6 rounded-2xl border border-white/70 bg-white/75 p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Key finding</p>
@@ -207,6 +124,11 @@ export function DecisionEvidenceReport() {
               ))}
             </tbody>
           </table>
+          {rows.length === 0 ? (
+            <div className="border-t bg-white p-4 text-sm text-slate-500">
+              No decisions have been recorded yet. Open the live demo once to warm the public sandbox.
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -214,20 +136,27 @@ export function DecisionEvidenceReport() {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Hash-linked audit trail</p>
         <h2 className="mt-1 text-2xl font-semibold">Latest audit events</h2>
         <div className="mt-4 grid gap-2">
-          {report.audit_trail.slice(0, 10).map((event) => (
-            <div key={event.id} className="rounded-2xl border border-white/70 bg-white/75 p-3 text-sm">
-              <div className="flex flex-wrap justify-between gap-2">
-                <strong>{event.type}</strong>
-                <span className="text-slate-500">{new Date(event.created_at).toLocaleTimeString()}</span>
+          {report.audit_trail.length ? (
+            report.audit_trail.slice(0, 10).map((event) => (
+              <div key={event.id} className="rounded-2xl border border-white/70 bg-white/75 p-3 text-sm">
+                <div className="flex flex-wrap justify-between gap-2">
+                  <strong>{event.type}</strong>
+                  <span className="text-slate-500">{new Date(event.created_at).toLocaleTimeString()}</span>
+                </div>
+                <p className="mt-1 text-slate-600">
+                  Subject {event.subject_id ?? "none"} {event.case_id ? `/ case ${event.case_id}` : ""}
+                </p>
+                <p className="mt-1 font-mono text-xs text-slate-500">
+                  prev {shortHash(event.previous_event_hash)} / event {shortHash(event.event_hash)}
+                </p>
               </div>
-              <p className="mt-1 text-slate-600">
-                Subject {event.subject_id ?? "none"} {event.case_id ? `/ case ${event.case_id}` : ""}
-              </p>
-              <p className="mt-1 font-mono text-xs text-slate-500">
-                prev {shortHash(event.previous_event_hash)} / event {shortHash(event.event_hash)}
-              </p>
+            ))
+          ) : (
+            <div className="rounded-2xl border border-white/70 bg-white/75 p-4 text-sm text-slate-600">
+              Audit events are held inside the in-memory runtime while no Postgres database is attached. The status page
+              still verifies the active hash chain on every request.
             </div>
-          ))}
+          )}
         </div>
       </section>
     </div>

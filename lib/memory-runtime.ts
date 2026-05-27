@@ -117,7 +117,7 @@ export function seedMemoryWorld() {
 
   append({
     agent_slug: "system",
-    agent_name: "KYA Demo",
+    agent_name: "AgentPay Guard",
     phase: "seed",
     message: `Seeded ${agents.length} demo agents for ${principal.legal_name}.`
   });
@@ -192,6 +192,32 @@ export async function runMemoryAgentTick(agentSlug?: string) {
   runtime.lastCronAt = new Date().toISOString();
   runtime.lastCronAgent = slug;
   return { plan, result, execution };
+}
+
+export async function ensureMemoryShowcaseData() {
+  const decisions = listMemoryEvents({ limit: 50 }).filter((event) => event.phase === "decision");
+  const statuses = new Set(decisions.map((event) => event.decision?.status));
+  const needsMore =
+    decisions.length < 3 ||
+    !statuses.has("approved") ||
+    !statuses.has("blocked") ||
+    ![...statuses].some((status) => status === "pending_human_approval" || status === "manual_review");
+
+  if (!needsMore) return;
+
+  for (const slug of ["procurement", "research", "travel", "research", "travel"]) {
+    await runMemoryAgentTick(slug);
+    const current = listMemoryEvents({ limit: 50 }).filter((event) => event.phase === "decision");
+    const currentStatuses = new Set(current.map((event) => event.decision?.status));
+    if (
+      current.length >= 3 &&
+      currentStatuses.has("approved") &&
+      currentStatuses.has("blocked") &&
+      [...currentStatuses].some((status) => status === "pending_human_approval" || status === "manual_review")
+    ) {
+      break;
+    }
+  }
 }
 
 export function listMemoryEvents({ limit = 50, agentSlug }: { limit?: number; agentSlug?: string }) {

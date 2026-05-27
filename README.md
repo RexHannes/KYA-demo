@@ -1,6 +1,6 @@
-# KYA Demo (public sandbox)
+# AgentPay Guard (public sandbox)
 
-Public **Know Your Agent** demo: mandate-bound agent payments, policy decisions, mock settlement, inspectable case files, and tamper-evident audit — deployed on **Vercel** with Postgres.
+Public **mandate enforcement for AI agents** demo: mandate-bound agent payments, policy decisions, mock settlement, inspectable case files, and tamper-evident audit — deployed on **Vercel** with optional Postgres.
 
 > **DEMO MODE** — Synthetic data only. No real funds, no real KYB/AML, and no production compliance conclusion.
 

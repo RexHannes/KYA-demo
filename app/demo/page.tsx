@@ -4,7 +4,7 @@ export default function DemoPage() {
   return (
     <div className="space-y-7">
       <header className="metal-card rounded-3xl p-6 sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">KYA Sandbox</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">AgentPay Guard sandbox</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight">Live agent authority console</h1>
         <p className="mt-3 max-w-2xl text-slate-600">
           Acme Demo Holdings — ProcurementBot, ResearchBot, and TravelBot submit live sandbox authority checks for mock-payment decisions.

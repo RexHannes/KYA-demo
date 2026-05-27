@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KYA Demo — Agent Payment Authority",
-  description: "Public demo sandbox for mandate, policy, and tamper-evident audit around AI-agent payments."
+  title: "AgentPay Guard — Mandate Enforcement for AI Agents",
+  description: "Public demo sandbox for AI-agent payment mandates, policy decisions, and tamper-evident audit."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

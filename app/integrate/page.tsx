@@ -23,21 +23,50 @@ export default function IntegratePage() {
       <pre className="rounded-lg bg-slate-100 p-4 text-sm">{`POST ${base}/api/demo/seed`}</pre>
 
       <h2>3. Check a payment</h2>
-      <pre className="rounded-lg bg-slate-100 p-4 text-sm overflow-x-auto">{`POST ${base}/api/payment-requests/check
-Content-Type: application/json
-x-agentpay-api-key: YOUR_KEY
+      <pre className="rounded-lg bg-slate-100 p-4 text-sm overflow-x-auto">{`curl -sS ${base}/api/payment-requests/check \\
+  -H "content-type: application/json" \\
+  -H "x-agentpay-api-key: YOUR_KEY" \\
+  -d '{
+    "agent_id": "agt_...",
+    "mandate_id": "mdt_...",
+    "merchant": "sanctioned-example.test",
+    "amount_usd": "48.00",
+    "token": "USDC",
+    "chain": "base",
+    "purpose": "purchase_dataset",
+    "counterparty_wallet_address": "0xdead000000000000000000000000000000000000",
+    "idempotency_key": "unique-per-attempt",
+    "merchant_request_id": "vendor-123",
+    "nonce": "nonce-456"
+  }'`}</pre>
 
-{
-  "agent_id": "agt_...",
-  "mandate_id": "mdt_...",
-  "merchant": "api.vendor.com",
-  "amount_usd": "12.50",
-  "token": "USDC",
-  "chain": "base",
-  "purpose": "buy_api_credits",
-  "idempotency_key": "unique-per-attempt",
-  "merchant_request_id": "vendor-123",
-  "nonce": "nonce-456"
+      <h2>Example DENY response</h2>
+      <pre className="rounded-lg bg-slate-900 p-4 text-sm text-white overflow-x-auto">{`{
+  "decision": {
+    "status": "blocked",
+    "reason": "screening_hit",
+    "approval_required": false,
+    "policy_version": "agentpay-demo-v1",
+    "mandate_hash": "sha256:...",
+    "rules_triggered": [
+      {
+        "id": "screening.counterparty",
+        "action": "block",
+        "reason": "sanctions_screening_match"
+      }
+    ]
+  },
+  "payment_request": {
+    "id": "payreq_...",
+    "merchant": "sanctioned-example.test",
+    "amount_usd": "48.00",
+    "token": "USDC",
+    "chain": "base"
+  },
+  "case": {
+    "id": "case_...",
+    "status": "blocked"
+  }
 }`}</pre>
 
       <h2>4. Execute mock payment (if approved)</h2>

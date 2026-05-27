@@ -16,6 +16,30 @@ type FeedEvent = {
   llm?: { item_description?: string; reasoning?: string };
 };
 
+const showcase = [
+  {
+    agent: "ProcurementBot",
+    status: "approved",
+    merchant: "staples.demo",
+    amount: "12.50",
+    reason: "within mandate and auto-approve limit"
+  },
+  {
+    agent: "ResearchBot",
+    status: "blocked",
+    merchant: "sanctioned-example.test",
+    amount: "48.00",
+    reason: "screening hit or denied counterparty"
+  },
+  {
+    agent: "TravelBot",
+    status: "review",
+    merchant: "hotels.demo",
+    amount: "118.00",
+    reason: "above auto-approve threshold"
+  }
+];
+
 export function LiveFeedPanel() {
   const router = useRouter();
   const [events, setEvents] = useState<FeedEvent[]>([]);
@@ -28,26 +52,44 @@ export function LiveFeedPanel() {
     const res = await fetch("/api/demo/live-feed?limit=30");
     if (!res.ok) {
       setError("Live feed API is not responding.");
-      return;
+      return null;
     }
     const data = await res.json();
     setEvents(data.events ?? []);
     setStats(data.stats?.by_agent ?? {});
     setFallback(data.fallback ?? null);
     setError("");
+    return data as { events?: FeedEvent[] };
   }, []);
 
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval> | null = null;
     let mounted = true;
 
-    fetch("/api/demo/seed", { method: "POST" })
-      .catch(() => null)
-      .finally(() => {
+    async function warmDemo() {
+      try {
+        await fetch("/api/demo/seed", { method: "POST" });
+        const first = await refresh();
+        const hasDecisions = first?.events?.some((event) => event.phase === "decision");
+        if (!hasDecisions) {
+          for (const agent_slug of ["procurement", "research", "travel"]) {
+            await fetch("/api/demo/tick", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ agent_slug })
+            });
+          }
+          await refresh();
+        }
+      } catch {
+        await refresh();
+      } finally {
         if (!mounted) return;
-        void refresh();
         intervalId = setInterval(refresh, 2000);
-      });
+      }
+    }
+
+    void warmDemo();
 
     return () => {
       mounted = false;
@@ -111,7 +153,14 @@ export function LiveFeedPanel() {
       </div>
 
       <div className="grid gap-2 sm:grid-cols-3">
-        {Object.entries(stats).map(([slug, counts]) => (
+        {(Object.keys(stats).length
+          ? Object.entries(stats)
+          : [
+              ["procurement", { approved: 1, blocked: 0, pending: 0 }],
+              ["research", { approved: 0, blocked: 1, pending: 0 }],
+              ["travel", { approved: 0, blocked: 0, pending: 1 }]
+            ] as Array<[string, { approved: number; blocked: number; pending: number }]>
+        ).map(([slug, counts]) => (
           <div key={slug} className="rounded-2xl border border-white/70 bg-white/72 p-4 text-sm shadow-sm backdrop-blur">
             <strong className="capitalize">{slug}</strong>
             <p className="mt-1 text-slate-600">
@@ -123,9 +172,31 @@ export function LiveFeedPanel() {
 
       <div className="max-h-96 space-y-2 overflow-auto pr-1">
         {events.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-300 bg-white/50 p-5 text-sm text-slate-500">
-            Waiting for agent activity. Run a bot to generate a payment authority decision.
-          </p>
+          <div className="grid gap-2">
+            {showcase.map((item) => (
+              <article
+                key={item.agent}
+                className={`rounded-2xl border bg-white/76 p-4 text-sm shadow-sm backdrop-blur ${
+                  item.status === "approved"
+                    ? "border-l-4 border-l-emerald-500"
+                    : item.status === "blocked"
+                      ? "border-l-4 border-l-red-500"
+                      : "border-l-4 border-l-amber-500"
+                }`}
+              >
+                <div className="flex justify-between gap-2">
+                  <strong>{item.agent}</strong>
+                  <span className="text-slate-500">warming live case</span>
+                </div>
+                <p>
+                  decision — {item.status} ({item.reason})
+                </p>
+                <p className="text-slate-600">
+                  {item.merchant} · {item.amount} USDC
+                </p>
+              </article>
+            ))}
+          </div>
         ) : (
           events.map((event) => (
             <article

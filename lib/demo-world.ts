@@ -169,7 +169,7 @@ export async function seedDemoWorld(guard: AgentPayGuard, prisma: DemoPrisma) {
 
   await appendLiveEvent({
     agent_slug: "system",
-    agent_name: "KYA Demo",
+    agent_name: "AgentPay Guard",
     phase: "seed",
     message: `Seeded ${agents.length} demo agents for ${principal.legal_name}.`
   });
