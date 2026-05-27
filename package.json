@@ -5,16 +5,17 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "netlify:bootstrap": "node scripts/netlify-bootstrap.mjs",
-    "netlify:deploy": "netlify deploy --prod --build"
+    "db:migrate": "prisma migrate deploy",
+    "db:studio": "prisma studio"
+  },
+  "engines": {
+    "node": "22.x"
   },
   "dependencies": {
-    "@netlify/functions": "^3.1.10",
     "@prisma/client": "^6.19.0",
     "@supabase/supabase-js": "^2.106.0",
     "next": "16.2.6",
@@ -24,8 +25,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@netlify/plugin-nextjs": "^5.15.8",
-    "netlify-cli": "^23.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

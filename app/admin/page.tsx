@@ -39,7 +39,7 @@ export default function AdminHomePage() {
         <header>
           <h1 className="text-3xl font-bold">Operator backstage</h1>
           <p className="text-slate-600">
-            Monitor demo KYA activity in Netlify Postgres. This area is not linked from the public demo.
+            Monitor demo KYA activity in Postgres. This area is not linked from the public demo.
           </p>
         </header>
 

@@ -1,4 +1,4 @@
--- Run in Supabase SQL editor if not using `npx prisma db push`
+-- Run in Supabase SQL editor if not using `npx prisma migrate deploy`
 
 create table if not exists kya_entities (
   id text not null,

@@ -91,7 +91,7 @@ export function LiveFeedPanel() {
           </p>
         </div>
         <div className="rounded-full border border-slate-300/80 bg-white/70 px-3 py-1 text-xs text-slate-600">
-          {fallback === "memory" ? "Memory fallback active" : "Netlify Postgres connected"}
+          {fallback === "memory" ? "Memory fallback active" : "Postgres connected"}
         </div>
       </div>
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}

@@ -1,6 +1,6 @@
 # KYA Demo (public sandbox)
 
-Public **Know Your Agent** demo: mandate-bound agent payments, policy decisions, mock settlement, inspectable case files, and tamper-evident audit — on **Netlify** + **Netlify Database/Postgres**.
+Public **Know Your Agent** demo: mandate-bound agent payments, policy decisions, mock settlement, inspectable case files, and tamper-evident audit — deployed on **Vercel** with Postgres.
 
 > **DEMO MODE** — Synthetic data only. No real funds, no real KYB/AML, and no production compliance conclusion.
 
@@ -50,30 +50,31 @@ stronger database constraints, production auth, and real provider integrations r
 ```bash
 cd kya-demo
 cp .env.example .env.local
-# Netlify Database → production → connection strings
+# Postgres connection strings
 npm install
-npx prisma migrate deploy
+npm run db:migrate
 npm run dev
 ```
 
 - Demo: http://localhost:3000/demo  
 - Backstage: http://localhost:3000/admin (use `ADMIN_TOKEN` from `.env.local`)
 
-## Deploy to Netlify (recommended)
+## Deploy to Vercel
 
-See **[docs/DEPLOY_NETLIFY.md](docs/DEPLOY_NETLIFY.md)** — one-command bootstrap + GitHub Actions auto-deploy.
+See **[docs/DEPLOY_VERCEL.md](docs/DEPLOY_VERCEL.md)** for the GitHub-backed Vercel setup.
 
-```bash
-export NETLIFY_AUTH_TOKEN=nfp_...
-cd kya-demo
-npm install
-npm run netlify:bootstrap
-# set env vars in Netlify UI, then:
-npx prisma migrate deploy
-npm run netlify:deploy
-```
+Vercel should import `RexHannes/KYA-demo` directly from GitHub. Set these environment variables in the Vercel project before the first production deployment:
 
-Cron: `netlify/functions/scheduled-demo-tick.mts` hits `/api/cron/demo-tick` every 5 minutes.
+| Variable | Notes |
+|----------|-------|
+| `DATABASE_URL` | Pooled Postgres connection string for runtime queries |
+| `DIRECT_URL` | Direct Postgres connection string for Prisma migrations |
+| `ADMIN_TOKEN` | Long random string for `/admin` |
+| `CRON_SECRET` | Long random string for `/api/cron/demo-tick` |
+| `PUBLIC_DEMO_MODE` | `true` for the public sandbox |
+| `NEXT_PUBLIC_APP_URL` | Final Vercel production URL |
+
+Cron: `vercel.json` runs `/api/cron/demo-tick` every 5 minutes.
 
 ## API summary
 
