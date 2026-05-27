@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { assertAdmin } from "@/lib/auth";
 import { getPrisma, hasDatabase } from "@/lib/prisma";
-import { listMemoryEvents } from "@/lib/memory-runtime";
+import { fetchAdminLiveFeed } from "@/lib/admin-live-feed";
 
 export async function GET(request: Request) {
   const denied = await assertAdmin(request);
@@ -14,9 +14,10 @@ export async function GET(request: Request) {
   const agentFilter = url.searchParams.get("agent") ?? undefined;
 
   if (!hasDatabase()) {
-    const events = listMemoryEvents({ limit: page * limit, agentSlug: agentFilter }).filter(
-      (event) => event.phase === "decision"
-    );
+    const feed = await fetchAdminLiveFeed(request, Math.max(page * limit, 100));
+    const events = feed.events.filter((event) => {
+      return event.phase === "decision" && (!agentFilter || event.agent_slug === agentFilter);
+    });
     const pageEvents = events.slice(skip, skip + limit);
     return NextResponse.json({
       requests: pageEvents.map((event) => {

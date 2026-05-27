@@ -4,6 +4,7 @@ import { getPrisma, hasDatabase } from "@/lib/prisma";
 import { verifyStoredAuditChain } from "@/lib/guard-runtime";
 import { listIntegratorApiKeys } from "@/lib/api-keys";
 import { memoryStatus } from "@/lib/memory-runtime";
+import { fetchAdminLiveFeed } from "@/lib/admin-live-feed";
 
 export async function GET(request: Request) {
   const denied = await assertAdmin(request);
@@ -11,15 +12,18 @@ export async function GET(request: Request) {
 
   if (!hasDatabase()) {
     const status = memoryStatus();
+    const feed = await fetchAdminLiveFeed(request, 200);
+    const decisions = feed.events.filter((event) => event.phase === "decision");
+    const agents = new Set(feed.events.map((event) => event.agent_slug).filter(Boolean));
     return NextResponse.json({
       database: status.database,
       audit_chain_valid: status.audit_chain_valid,
       counts: {
-        audit_events: status.counts.audit_events,
-        decisions: status.counts.decisions,
-        payment_requests: 0,
-        agents: 0,
-        live_feed: status.counts.live_feed
+        audit_events: status.counts.audit_events || feed.events.length,
+        decisions: status.counts.decisions || decisions.length,
+        payment_requests: decisions.length,
+        agents: agents.size,
+        live_feed: feed.stats?.total_events ?? feed.events.length
       },
       api_keys: [],
       last_cron_at: status.last_cron_at,
