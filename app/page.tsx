@@ -31,7 +31,7 @@ export default function HomePage() {
       <ul className="list-disc space-y-2 pl-6 text-slate-600">
         <li>Demo data only — separate from any future production database.</li>
         <li>Hosted on Vercel with Postgres for persistence.</li>
-        <li>Cron keeps the feed alive every 5 minutes on production deploys.</li>
+        <li>Cron keeps the feed alive on production deploys.</li>
       </ul>
     </div>
   );

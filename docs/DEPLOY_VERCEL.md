@@ -56,4 +56,4 @@ After deployment, verify:
 - `/admin`
 - `/api/status`
 
-The public demo auto-seeds on load when `PUBLIC_DEMO_MODE=true`. The cron route is configured in `vercel.json` and should advance the live feed every 5 minutes.
+The public demo auto-seeds on load when `PUBLIC_DEMO_MODE=true`. The cron route is configured in `vercel.json` to run daily on Vercel Hobby. On Vercel Pro, change the schedule to `*/5 * * * *` if you want the feed to advance every 5 minutes.

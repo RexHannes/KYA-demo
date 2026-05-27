@@ -74,7 +74,7 @@ Vercel should import `RexHannes/KYA-demo` directly from GitHub. Set these enviro
 | `PUBLIC_DEMO_MODE` | `true` for the public sandbox |
 | `NEXT_PUBLIC_APP_URL` | Final Vercel production URL |
 
-Cron: `vercel.json` runs `/api/cron/demo-tick` every 5 minutes.
+Cron: `vercel.json` runs `/api/cron/demo-tick` daily on Vercel Hobby. On Vercel Pro, change the schedule back to `*/5 * * * *` if you want the feed to advance every 5 minutes.
 
 ## API summary
 
