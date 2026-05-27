@@ -9,6 +9,34 @@ export default function IntegratePage() {
         <strong>mock settlement</strong> and <strong>demo data</strong> only.
       </p>
 
+      <h2>x402 / AgentKit integration</h2>
+      <p>
+        If your agent uses <strong>x402</strong> (HTTP 402 Payment Required) or an AgentKit wallet
+        (Coinbase, AWS Bedrock AgentCore, or similar), route the pre-settlement check to AgentPay
+        Guard <em>before</em> signing:
+      </p>
+      <ol>
+        <li>Agent receives a <code>402 Payment Required</code> response from a paid API or data endpoint.</li>
+        <li>
+          POST the payment details to{" "}
+          <code>/api/payment-requests/check</code> — mandate scope, counterparty screening, and
+          spending limits are evaluated instantly.
+        </li>
+        <li>
+          If <code>decision.status === &quot;approved&quot;</code>, proceed to wallet signing and
+          x402 settlement.
+        </li>
+        <li>
+          Attach <code>decision.id</code> (the evidence pack reference) to your transaction
+          metadata — this is your audit trail linking the on-chain tx to the policy decision.
+        </li>
+      </ol>
+      <p className="not-prose rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+        <strong>Why this matters:</strong> a misconfigured agent does not just give a wrong answer —
+        it signs a transaction. AgentPay Guard is the policy, compliance, and evidence layer that
+        stands between the agent decision and the wallet.
+      </p>
+
       <h2>1. Get an API key</h2>
       <p>
         Ask your operator for a demo integrator key (created in{" "}
