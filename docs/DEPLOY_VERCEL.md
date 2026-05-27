@@ -40,10 +40,10 @@ Optional variables:
 Trigger a production deployment from Vercel. The build command runs:
 
 ```bash
-prisma generate && prisma migrate deploy && next build
+node scripts/vercel-build.mjs
 ```
 
-That applies committed Prisma migrations before the Next.js build.
+That generates Prisma Client, applies committed Prisma migrations when `DATABASE_URL` is configured, and otherwise deploys the public sandbox in memory-fallback mode.
 
 ## 5. Smoke test
 

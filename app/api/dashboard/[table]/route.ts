@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { assertAdmin } from "@/lib/auth";
-import { getPrisma } from "@/lib/prisma";
+import { getPrisma, hasDatabase } from "@/lib/prisma";
+import { listMemoryEvents, memoryStatus } from "@/lib/memory-runtime";
 
 const ALLOWED = new Set([
   "principals",
@@ -28,6 +29,16 @@ export async function GET(
   const { table } = await context.params;
   if (!ALLOWED.has(table)) {
     return NextResponse.json({ error: "invalid_table" }, { status: 400 });
+  }
+
+  if (!hasDatabase()) {
+    if (table === "live_feed_events") {
+      return NextResponse.json({ table, rows: listMemoryEvents({ limit: 100 }) });
+    }
+    if (table === "status_snapshot") {
+      return NextResponse.json({ table, rows: [memoryStatus()] });
+    }
+    return NextResponse.json({ table, rows: [], fallback: "memory" });
   }
 
   const prisma = getPrisma();
