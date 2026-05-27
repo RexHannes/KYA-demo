@@ -32,6 +32,16 @@ function text(value: unknown, fallback = "Not recorded") {
   return typeof value === "string" && value ? value : fallback;
 }
 
+function display(value: unknown, fallback = "Not recorded") {
+  if (typeof value === "string" && value) return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return fallback;
+}
+
+function money(value: unknown) {
+  return `$${display(value, "—")}`;
+}
+
 function label(value: unknown) {
   return text(value).replaceAll("_", " ");
 }
@@ -82,6 +92,8 @@ export default async function PaymentAuthorityCasePage({
   const reviewCase = asObject(pack.case);
   const auditVerification = asObject(pack.audit_verification);
   const mandateIntegrity = asObject(pack.mandate_integrity);
+  const screeningResult = asObject(decision.screening_result);
+  const limits = asObject(asObject(mandate.data).limits ?? mandate.limits);
   const triggered = new Map(
     asArray(decision.rules_triggered).map((rule) => {
       const item = asObject(rule);
@@ -99,6 +111,13 @@ export default async function PaymentAuthorityCasePage({
     };
   });
   const auditEvents = asArray(pack.scoped_audit_events);
+  const triggeredReasons = Array.from(triggered.values()).map((rule) => label(asObject(rule).reason));
+  const executiveReason =
+    decision.status === "blocked"
+      ? `Blocked because ${triggeredReasons.join(" + ") || label(decision.reason)}.`
+      : decision.status === "pending_human_approval"
+        ? `Held for human approval because ${label(decision.reason)}.`
+        : `Approved because the request is ${label(decision.reason)}.`;
 
   return (
     <div className="space-y-6">
@@ -124,6 +143,16 @@ export default async function PaymentAuthorityCasePage({
         <Fact title="Approver" value={text(approver.email)} detail={text(approver.role)} />
         <Fact title="Agent" value={text(agent.name)} detail={text(agent.wallet_address)} mono />
         <Fact title="Audit chain" value={auditVerification.valid === false ? "Needs review" : "Valid"} detail={`${auditEvents.length} scoped events`} />
+      </section>
+
+      <section className="metal-card rounded-3xl p-5 sm:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Executive summary</p>
+        <h2 className="mt-2 text-2xl font-semibold">{executiveReason}</h2>
+        <div className="mt-4 grid gap-3 text-sm md:grid-cols-3">
+          <Fact title="Decision" value={label(decision.status)} detail={label(decision.reason)} />
+          <Fact title="Screening" value={label(decision.screening_status)} detail="Mock screening provider; production hook: Chainalysis, TRM, or Elliptic." />
+          <Fact title="Store" value={label(asObject(pack.store).kind)} detail={text(asObject(pack.store).path, "Runtime store")} />
+        </div>
       </section>
 
       <section className="metal-card rounded-3xl p-5 sm:p-6">
@@ -166,18 +195,12 @@ export default async function PaymentAuthorityCasePage({
           </div>
           <div className="rounded-2xl border border-white/70 bg-white/75 p-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Spending limits</p>
-            {(() => {
-              const raw = asObject(mandate.data) as { limits?: unknown };
-              const limits = asObject(raw.limits ?? mandate.limits);
-              return (
-                <p className="mt-1 space-y-0.5 text-xs leading-relaxed">
-                  Auto-approve ≤ ${text(limits.auto_approve_limit_usd ?? limits.auto_approve_limit, "—")}<br />
-                  Human approval ≤ ${text(limits.human_approval_limit_usd ?? limits.human_approval_limit, "—")}<br />
-                  Hard block &gt; ${text(limits.hard_block_limit_usd ?? limits.hard_block_limit, "—")}<br />
-                  Daily cap ${text(limits.daily_limit_usd ?? limits.daily_limit, "—")}
-                </p>
-              );
-            })()}
+            <p className="mt-1 space-y-0.5 text-xs leading-relaxed">
+              Auto-approve ≤ {money(limits.auto_approve_limit_usd ?? limits.auto_approve_limit)}<br />
+              Human approval ≤ {money(limits.human_approval_limit_usd ?? limits.human_approval_limit)}<br />
+              Hard block &gt; {money(limits.hard_block_limit_usd ?? limits.hard_block_limit)}<br />
+              Daily cap {money(limits.daily_limit_usd ?? limits.daily_limit)}
+            </p>
           </div>
           <div className="rounded-2xl border border-white/70 bg-white/75 p-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Expires</p>
@@ -218,12 +241,13 @@ export default async function PaymentAuthorityCasePage({
           {receipt.id ? (
             <div className="mt-4 space-y-3 text-sm">
               <Fact title="Receipt" value={text(receipt.id)} detail={text(receipt.tx_hash)} mono />
-              <Fact title="Screening" value={label(receipt.screening_status)} detail="Sandbox screening result" />
+              <Fact title="Screening" value={label(receipt.screening_status)} detail="Mock screening provider; production hook: Chainalysis, TRM, or Elliptic." />
             </div>
           ) : (
             <div className="mt-4 space-y-3 text-sm">
               <Fact title="Case" value={text(reviewCase.id)} detail={label(reviewCase.status)} />
               <Fact title="Risk level" value={label(reviewCase.risk_level)} detail={label(reviewCase.decision_reason)} />
+              <Fact title="Screening provider" value={label(screeningResult.provider)} detail="Mock provider in demo; replace with Chainalysis, TRM, or Elliptic in production." />
             </div>
           )}
         </div>
@@ -231,6 +255,10 @@ export default async function PaymentAuthorityCasePage({
 
       <section className="metal-card rounded-3xl p-5 sm:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Scoped audit timeline</p>
+        <p className="mt-2 text-sm text-slate-600">
+          Scoped view shows only events related to this case. A previous hash can point to an unrelated event
+          outside this filtered timeline; the full chain remains available in the raw evidence export.
+        </p>
         <div className="mt-4 grid gap-2">
           {auditEvents.map((event) => {
             const item = asObject(event);
@@ -250,10 +278,14 @@ export default async function PaymentAuthorityCasePage({
       </section>
 
       <section className="metal-card rounded-3xl p-5 sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Raw evidence pack</p>
-        <pre className="mt-4 max-h-[38rem] overflow-auto rounded-2xl bg-slate-950 p-4 text-xs text-slate-100">
-          {JSON.stringify(pack, null, 2)}
-        </pre>
+        <details>
+          <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+            View raw evidence JSON
+          </summary>
+          <pre className="mt-4 max-h-[38rem] overflow-auto rounded-2xl bg-slate-950 p-4 text-xs text-slate-100">
+            {JSON.stringify(pack, null, 2)}
+          </pre>
+        </details>
       </section>
     </div>
   );
