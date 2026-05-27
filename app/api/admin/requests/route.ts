@@ -7,7 +7,6 @@ export async function GET(request: Request) {
   const denied = await assertAdmin(request);
   if (denied) return denied;
 
-  const prisma = getPrisma();
   const url = new URL(request.url);
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1"));
   const limit = Math.min(Number(url.searchParams.get("limit") ?? "20"), 100);
@@ -47,6 +46,7 @@ export async function GET(request: Request) {
     });
   }
 
+  const prisma = getPrisma();
   const [events, total] = await Promise.all([
     prisma.kyaLiveFeedEvent.findMany({
       where: {
