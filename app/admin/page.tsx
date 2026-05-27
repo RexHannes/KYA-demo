@@ -59,11 +59,17 @@ export default function AdminHomePage() {
         )}
 
         <div className="flex flex-wrap gap-3">
-          <Link href="/admin/data" className="rounded-md bg-slate-900 px-4 py-2 text-sm text-white">
-            Database tables
+          <Link href="/admin/requests" className="rounded-md bg-slate-900 px-4 py-2 text-sm text-white">
+            Payment requests
+          </Link>
+          <Link href="/admin/monitoring" className="rounded-md bg-slate-900 px-4 py-2 text-sm text-white">
+            Monitoring alerts
           </Link>
           <Link href="/admin/keys" className="rounded-md border bg-white px-4 py-2 text-sm">
             Integrator API keys
+          </Link>
+          <Link href="/admin/data" className="rounded-md border bg-white px-4 py-2 text-sm">
+            Database tables
           </Link>
           <Link href="/demo" className="rounded-md border bg-white px-4 py-2 text-sm">
             Public demo

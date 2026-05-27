@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "AgentPay Guard — Mandate Enforcement for AI Agents",
-  description: "Public demo sandbox for AI-agent payment mandates, policy decisions, and tamper-evident audit."
+  description: "Sandbox demo: mandate enforcement, policy decisions, and tamper-evident audit for AI agent payments. Every approval or block is hash-linked and exportable."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

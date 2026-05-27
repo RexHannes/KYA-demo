@@ -108,3 +108,20 @@ model KyaStatusSnapshot {
 
   @@map("kya_status_snapshot")
 }
+
+model KyaMonitoringAlert {
+  id           String    @id @default(cuid())
+  agentSlug    String    @map("agent_slug")
+  alertType    String    @map("alert_type")
+  severity     String
+  description  String
+  triggeringIds Json     @default("[]") @map("triggering_ids")
+  reviewedAt   DateTime? @map("reviewed_at")
+  reviewedBy   String?   @map("reviewed_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  mode         String    @default("demo")
+
+  @@index([agentSlug])
+  @@index([createdAt(sort: Desc)])
+  @@map("kya_monitoring_alerts")
+}
